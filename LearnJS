@@ -1,0 +1,1441 @@
+JavaScript
+
+            ========== CHAPTER 2: GRAMMAR ===========
+
+- When used inside of a function, the var statement defines the functions private variables.
+- A block is a set of statements wrapped in curly braces. Blocks in JS do not create a new scope, so variables should be defined at the top of the function, not in blocks.
+
+            ========== CHAPTER 3: OBJECTS ===========
+
+- Numbers, strings, and booleans have methods, but are immutable. Objects are mutable collections.
+- Arrays are objects, functions are objects, regexp are objects, and objects are objects.
+
+Object examples:
+
+var stooge = {
+         "first-name": "Jerome",
+         "last-name": "Howard"
+};
+
+------
+
+var flight = {
+         airline: "Oceanic",
+         number: 815,
+         departure: {
+             IATA: "SYD",
+             time: "2004-09-22 14:55",
+             city: "Sydney"
+}, arrival: {
+             IATA: "LAX",
+             time: "2004-09-23 10:42",
+             city: "Los Angeles"
+} };
+
+
+- RETRIEVAL: If constant, use notation: flight.departure.IATA //"SYD"
+            Else if string, use stooge["first-name"] //"Jerome"
+
+- To define methods on an object, you must use the prototype property.
+Example:
+function Person(firstName) {
+  this.firstName = firstName;
+}
+
+> Person.prototype //Person {}
+
+Person.prototype.sayHello = function() {
+  alert("Hello, I'm " + this.firstName);
+};
+
+> Person.prototype //Person {sayHello: function}
+
+- Setting the prototype on the Object will set it for the base object literals until they are updated on an individual object literal basis.
+
+DELEGATION
+- When we try to retrieve a property value from an object and it cannot find one, it will go to its prototype object and if it cannot find one, itll keep going until the Object.prototype. This is called delegation.
+
+REFLECTION
+- typeof flight.number //'number'
+or typeof flight.arrival //'object'
+This is reflection. If true/false, use flight.hasOwnProperty() method
+
+ENUMERATION
+var name;
+for (name in another_stooge) {
+  if (typeof another_stooge[name] !== 'function') {
+    console.log(name + ':' + another_stooge[name]);
+  }
+}
+
+Global Abatement
+- To minimize the amount of global variables, create a container for your app.
+var MYAPP = {};
+
+MYAPP.flight = {...} ...
+MYAPP.stooge = {...} ...
+
+                    ========== CHAPTER 4: FUNCTIONS ===========
+
+
+- Functions are used to specify the behavior of objects
+- Every function has two additional hidden properties: functions context and code that implements behavior
+
+FUNCTION DECLARATION VS. FUNCTION EXPRESSION
+
+FUNCTION DECLARATION EXAMPLE:
+function plus(a, b) {
+  return a + b;
+};
+
+FUNCTION EXPRESSION EXAMPLE:
+var plus = function() {
+  return a + b;
+};
+
+- If we add a () at the end, itll execute the function immediately.
+- Function expressions are good usually when you need a function once or if you want to execute something immediately.
+
+Four ways of invoking functions
+- Functions
+- Methods
+- Constructors
+- Apply & Call methods
+
+Functions also get arguments and this. arguments are good to use when you dont know the particular amount of parameters. 
+
+
+// -------- FUNCTIONS ----------
+function plus(a,b) {
+  return (
+    console.log(a + b),
+    console.log(this),
+    console.log(arguments)
+  )
+}
+
+plus(2,2); //returns 4, Window object (everything), [2,2]
+// not very good because 'this' is pointing to the Window global object
+
+
+// -------- METHODS ------------
+var calc = {
+  status: 'Awesome',
+  plus: function(a,b) {
+    return (
+      console.log(this),
+      console.log(a+b),
+      console.log(arguments),
+      console.log(this.status)
+    )
+  }
+}
+
+calc.plus(2,2); //returns Calc object, 4, [2,2], Awesome
+// this object is pointing to the object
+// invoke the function using dot notation
+// the binding of this happens at invocation time
+// In essence, binding functions to objects and using them as methods is a great programming technique. 'this' is now much more powerful
+
+
+// --------- CONSTRUCTORS ----------
+ var Dog = function() {
+  var name, breed;
+  return console.dir(this);
+ };
+
+ var firstDog = new Dog;
+ firstDog.name = "Rover";
+
+ var secondDog = new Dog;
+secondDog.name = "Fluffy";
+
+//returns Dog {name: }
+
+
+// ---------- Prototype -----------
+var speak = function(saywhat) {
+  console.log(saywhat);
+}
+
+var Dog = function() {
+  var name, breed;
+}
+
+var Cat = function() {
+  var name, breed;
+}
+
+Dog.prototype.speak = speak;
+Cat.prototype.speak = speak;
+
+firstDog = new Dog;
+firstDog.name = "Rover";
+firstDog.breed = "Doberman";
+firstDog.speak('woof');
+
+firstCat = new Cat;
+firstCat.name = "Sniggles";
+firstCat.breed = "Manx";
+firstCat.speak('meow');
+
+// returns woof, meow
+// So you can now modify one function that will affect two different objects
+
+// ------------- CALL & APPLY -----------
+- Define the value of this argument
+- Control: this and arguments
+- Call passes a value, apply passes an array
+
+var speak = function(what) {
+  console.log(what);
+  console.log(this);
+}
+
+speak("wat") //this will return wat and Window object
+// but you can use call/apply to scope the this
+
+var speak = function(what) {
+  console.log(this.love);
+  console.log(what);
+}
+
+var saySomething = {normal: 'meow', love: 'purr'}
+speak.call(saySomething, saySomething.normal) // returns saySomething object (also second parameter is the what value)
+speak.apply(saySomething, ['meoff']) // returns purr, meoff
+
+- The arguments parameter - holds a list of all elements passed as arguments into the function
+  - Can get:
+    - Numerical index arguments[x]
+    - arguments.length
+  - It can loop through arguments, but cant use all array methods
+
+i.e.
+var plus = function() {
+  var sum = 0;
+  for(var i = arguments.length - 1; i >= 0; i--) {
+    sum += arguments
+  }
+  return sum
+}
+
+console.log(plus(1,2,3,4,5)) // returns sum
+
+// ------ ANONYMOUS CLOSURES / SELF EXECUTING FUNCTION ---------
+
+(function() {
+  console.log("foo");
+})();
+
+- JS converts the inner function into a value and then use the parens at the end as a way to pass in values if we want to. This is a self-executing function
+- Anything done outside the function cannot get into the function and scopes it. Closing variables into the function, called a closure, and this is great for modules and similar JS constructs.
+
+// --------- JS Variable scope and hoisting
+
+function myDog() {
+  var dogName = 'Fido';
+  function otherDog() {
+    console.log(dogName + ' says woof')
+  }
+} 
+
+myDog(); // Will return 'Fido says woof'
+
+HOISTING -
+- During the browser processing phrase, JS reorganizes the variable declarations to the top of the function. This is also the same with functions. Always declare vars at top and functions in the right place and youll never run into it!
+
+// From JS: The Good Parts
+Closures
+- A function that 'remembers' the environment in which it was created.
+Example:
+
+function makeSizer(size) {
+  return function() {
+    document.body.style.fontSize = size + 'px';
+  };
+}();
+
+var size12 = makeSizer(12);
+var size14 = makeSizer(14);
+var size16 = makeSizer(16);
+
+Notice size is not passed into the anonymous function, but it inherently knows, due to its environment
+- If a function attempts to overload a function, the extra parameter is discarded. If it underloads, it passes in undefined.
+
+SCOPE
+- It is best to declare all of the variables used in a function at the top of the function body.
+
+MODULE:
+- Modules use functions and closures to completely eliminate use of global variables
+example:
+var ray = (function() {
+  var DEFAULTS = {
+    say: 'hello',
+    speed: 'normal'
+  }
+
+  return {
+    speak: function() {
+      var myArguments = arguments[0] || '';
+      var statement = myArguments.say || DEFAULTS.say;
+      console.log(statement);
+      return this
+    },
+    run: function() {
+      var myArguments = arguments[0] || '';
+      var running = myArguments.speed || DEFAULTS.speed;
+      console.log('running...' + running);
+      return this;
+    }
+  }
+
+})();
+
+ray.speak({say: 'howdy'}); // will return howdy unless empty, then returns hello
+ray.speak({say: 'howdy'}).run() // you can chain this because you are returning this
+
+CASCADE:
+- Cascading allows for objects to be given functionality through chaining. They do not have a return value
+
+Ex:
+getElement('myBoxDiv').
+  move(350, 150).
+  width(100).
+  color('red').
+  later(2000, function() {
+    this.
+      color('yellow').
+      slide(400,40,200,200);
+  }).
+  tip('this box is resizeable');
+
+CURRYING:
+- Refers to the process of transforming a function with multiple arguments into the same function with less arguments. Basically this is achieved by binding some of the arguments that the first function evokes, so that those values are fixed for the second invokation. (which, btw, is a closure)
+
+- This is generally good for integration with callbacks to create higher-order 'factory' functions.
+
+var people = function(a) {
+  return function(b) {
+    var result = 'people are '.concat(a).concat(' and ').concat(b);
+    return result;
+  };
+};
+
+var Sabba = people('boys');
+Sabba('girls'); //people are 'boys' and 'girls'
+
+MEMOIZATION:
+- Functions can use objects to remember the results of previous operations. Objects and Arrays are great for this.
+
+Example would be the Fibonacci example (see pg. 44 for more details)
+
+            ========== CHAPTER 5: INHERITANCE ===========
+
+PSEUDOCLASSICAL
+- When a function object is created, the Function constructor that produces the function object runs code like this:
+
+this.prototype = {constructor: this};
+
+The constructor property isnt useful, but every function gets a prototype object because JS doesnt provide a way of fetermining which functions are intended to be used as constructors.
+
+This is essentially making a base class and then inheriting from it.
+
+Defining a constructor:
+
+var Mammal = function(name) {
+  this.name = name;
+};
+
+Mammal.prototype.get_name = function() {
+  return this.name;
+};
+
+Mammal.prototype.says = function() {
+  return this.saying || ';';
+};
+
+Then we make an instance:
+
+var myMammal = new Mammal('Herb the Mammal');
+var name = myMammal.get_name(); //'Herb the Mammal'
+
+Another pseudoclass that inherits from Mammal:
+
+var Cat = function(name) {
+  this.name = name;
+  this.saying = 'meow';
+};
+
+(Replace Cat.prototype with new instance of Mammal)
+
+Cat.prototype = new Mammal();
+
+Cat.prototype.purr = function (n) {
+        var i, s = '';
+        for (i = 0; i < n; i += 1) {
+            if (s) {
+              s += '-'; 
+            }
+        s += 'r'; 
+      }
+      return s; 
+    };
+
+Cat.prototype.get_name = function () { 
+  return this.says() + ' ' + this.name + ' ' + this.says();
+};
+
+var myCat = new Cat('Henrietta');
+var says = myCat.says(); // 'meow'
+var purr = myCat.purr(5); // 'r-r-r-r-r' 
+var name = myCat.get_name(); // 'meow Henrietta meow'
+
+To make things a bit cleaner, we can define an 'inherits' method:
+
+Function.method('inherits', function (Parent) { 
+  this.prototype = new Parent();
+  return this;
+});
+
+So with this new method and cascading turns into:
+
+ var Cat = function (name) {
+         this.name = name;
+         this.saying = 'meow';
+     }.
+         inherits(Mammal).
+         method('purr', function (n) {
+             var i, s = '';
+             for (i = 0; i < n; i += 1) {
+                 if (s) {
+                     s += '-';
+         }
+     s += 'r'; 
+   }
+   return s; 
+ }).
+ method('get_name', function () {
+  return this.says() + ' ' + this.name + ' ' + this.says();
+});
+
+
+PROTOTYPAL
+- Instead of dealing with classes, we focus on objects. A new object can simply inherit the opportunities of the old object.
+
+Start by making a useful object:
+
+var myMammal = {
+  name: 'Herb the Mammal',
+  get_name: function() {
+    return this.name;
+  },
+  says: function() {
+    return this.saying || '';
+  }
+};
+
+Then make many more objects like that one using Object.create:
+
+var myCat = Object.create(myMammal);
+myCat.name = 'Henry';
+myCat.saying = 'meow';
+myCat.purr = function (n) {
+  var i, s = '';
+  for (i = 0; i < n; i += 1) {
+    if (s) {
+      s += '-';
+    }
+  s += 'r'; 
+  }
+  return s;
+};
+myCat.get_name = function () {
+  return this.says() + ' ' + this.name + ' ' + this.says();
+};
+
+
+
+FUNCTIONAL
+- Functional inheritance allows for private/public variables to come into play, unlike the one sbefore it. Pseudoclassical and Prototypal attempts make all properties of an object visible.
+
+Properties of an object can be replaced or deleted, but the integrity of the object is not compromised. If all the methods of the object make no use of this or that, then the object is 'durable', meaning it is simply a collection of functions that act as 'capabilities' and they cannot be compromised.
+
+Here are the high-level steps:
+1) Create a new object (either make object literal, or call constructor, or use Object.create, whatever)
+2) Optionally define private instance variables and methods. These are just ordinary vars of the function
+3) Augment the new object with methods. These methods will have priviledged access to the parameters and the vars defined in the second step
+4) It returns that new object
+
+Example:
+var mammal = function(spec) {
+  var that = {};
+
+  that.get_name = function() {
+    return spec.name;
+  };
+
+  that.says = function() {
+    return spec.saying || '';
+  };
+
+  return that;
+};
+
+var myMammal = mammal({name: 'Herb the Mammal'});
+
+Then when creating Cat, itll only deal with the differences:
+
+var cat = function(spec) {
+  spec.saying = spec.saying || 'meow';
+  var that = mammal(spec);
+  that.purr = function(n) {
+    var i, s = '';
+    for (i = 0; i < n; i += 1) {
+      if (s) {
+        s += '-';
+      }
+      s += 'r';
+    }
+    return s;
+  };
+  that.get_name = function() {
+    return that.says() + ' ' + spec.name + ' ' + that.says();
+  };
+  return that;
+}
+
+var myCat = cat({name: 'Henry'});
+
+This also allows us to use super methods:
+
+Object.method('superior', function (name) {
+  var that = this,
+  method = that[name]; 
+  return function () {
+    return method.apply(that, arguments);
+  };
+});
+
+var coolcat = function (spec) {
+  var that = cat(spec),
+    super_get_name = that.superior('get_name');
+  that.get_name = function (n) {
+    return 'like ' + super_get_name() + ' baby'; 
+  };
+  return that;
+};
+
+var myCoolCat = coolcat({name: 'Bix'});
+var name = myCoolCat.get_name(); //'like meow Bix meow baby'
+
+            ========== CHAPTER 6: ARRAYS ===========
+
+- An array is a linear allocation of memory, where elements can be accessed. They are very fast data structures. JS doesnt have real arrays, its an object that has some array-like characteristics. It is much slower than a real array.
+
+ARRAY LITERALS
+- Array literals provide a very convenient notation for creating new array values.
+
+ex.
+var empty = [];
+var numbers = ['zero', 'one', 'two', 'three'];
+
+> empty[1]; // undefined
+> empty.length // 0
+> numbers[1]; // 'one'
+> number.length // 4
+
+The object literal:
+
+var numbers_object = {
+  '0': 'zero', 
+  '1': 'one', 
+  '2': 'two', 
+  '3': 'three'
+};
+
+- The difference between these two ways are that numbers pulls from Array.prototype and numbers_object pulls from Object.prototype
+UPDATE
+- To push to an array, use the push() function.
+DELETE
+- Since JS arrays are just objects, the delete operator can be used to remove elements from an array
+
+ex.
+> delete numbers[2]; //numbers is now ['zero', 'one', 'three']
+
+- If its a large array, every property after the one deleted must be removed and reinserted with a new key, so this action may be slow for larger arrays.
+
+ENUMERATION
+- The 'for...in' statement can be used, but it does not retain numerical order of properties. The 'for' loop should always be used.
+
+ex.
+var i;
+for (i = 0; i > myArray.length; i++) {
+  document.writeln(myArray[i]);
+}
+
+WHEN TO USE AN OBJECT OR ARRAY
+- When the property names are small sequential integers, use an array. Otherwise, use an object.
+- We can define an 'is_array' function:
+
+var is_array = function(value) {
+  return value && 
+    typeof value === 'object' &&
+    typeof value.length === 'number' &&
+    typeof value.splice === 'function' &&
+    !(value.propertyIsEnumerable('length'));
+};
+
+METHODS
+- A great method we can use that takes a function that can be worked with many array items is this:
+
+Array.method('reduce', function(f, value) {
+  var i;
+  for (i = 0; i < this.length; i += 1) {
+    value = f(this[i], value);
+  }
+  return value;
+});
+
+Then you can do a sum function:
+var add = function(a, b) {
+  return a + b;
+};
+
+Then invoke the reduce method and pass in function:
+
+var data = [4, 8, 15, 16, 23, 42];
+var sum = data.reduce('add', 0); // sum is 108
+
+DIMENSIONS
+- JavaScript does not have arrays of more than one dimension, but it can have arrays of arrays.
+
+Ex.
+var matrix = [ [0, 1, 2 ], [3, 4, 5], [6, 7, 8] ];
+> matrix[2][1] //7
+
+For more on creating matrices, see pg. 64
+
+            =========== CHAPTER 7: REGULAR EXPRESSIONS ===========
+// DO THIS SECTION + PLAY SOME REGEX GOLF LATER
+
+            =========== CHAPTER 8: METHODS ===========
+ARRAY
+array.concat(item to concat)
+
+array.join(separator)
+ex. var a = ['a', 'b', 'c'];
+var b = a.join(''); //b is 'abc'
+
+array.pop() //pops item from array
+Implemented:
+Array.method('pop', function() {
+  return this.splice(this.length - 1, 1)[0];
+});
+
+array.push() //pushes item(s) to array
+Implemented:
+Array.method('push', function () { 
+  this.splice.apply(
+    this,
+    [this.length, 0].
+      concat(Array.prototype.slice.apply(arguments)));
+  return this.length;
+});
+
+array.reverse()
+
+array.shift() // removes the first element from an array and returns it.
+var a = ['a', 'b', 'c']
+var c = a.shift(); //a is ['b', 'c'] and c is 'a'
+
+array.slice(start, end) // makes a shallow copy of a portion of an array
+var a = ['a', 'b', 'c'];
+var b = a.slice(0, 1); // b = ['a']
+var c = a.slice(1); // c = ['b', 'c']
+var d = a.slice(1, 2) // d = ['b']
+
+            =========== CHAPTER 9: AJAX ===========
+
+How browsers work:
+- a browser requests a page
+- client requests info from the server
+- Users sometimes request additional info from server
+  - Without AJAX, it requests the page again
+  - With AJAX, it only requests certain needed pieces
+    - XHR API is not XML. It means XHR, which can be JSON, HTML, etc.
+
+Asynchronous requests are good because they dont have to wait for other events and things to finish before making the next call.
+
+<script>
+var request = new XMLHttpRequest();
+request.open('GET', 'sidebar.html');
+request.onreadystatechange = function () {
+  if (xrequestreadyState === 4) {
+    document.getElementById('ajax').innerHTML = request.responseText;
+  }
+};
+
+function sendAJAX() {
+  request.send();
+  document.getElementById('load').style.display = 'none';
+}
+</script>
+
+jQuery
+<script>
+function sendAJAX() {
+  $('#ajax').load('sidebar.html');
+  $('#load').hide();
+}
+</script>
+
+JQuery/AJAX:
+$.getJSON(url, data, callback) //this is different from $.get() because it parses from string to object
+
+var request;
+if (window.XMLHttpRequest) {
+  request = new XMLHttpRequest();
+} else {
+  request = new ActiveXObject("Microsoft.XMLHTTP");
+}
+
+// open request and ask for specific file
+request.open('GET', 'data.json');
+request.onreadystatechange = function() {
+  // check if successful
+  if (request.status === 200) && (request.readyState === 4)) {
+  // When the data comes back from the server, it'll come back as a string in responseText. in order to convert string to js object, it needs to be parsed. once parsed into info variable, it'll work.
+  var output = '<ul>';
+  var items = JSON.parse(request.responseText);
+    for (var key in items) {
+      '<li>' + items[key].name + '</li>'
+    }
+    output += '</ul>';
+    document.getElementyId('update').innerHTML = output;
+  }
+}
+request.send();
+
+JSONP:
+If youre trying to reach a file that is somewhere else and not in the same domain or same place as the current document, you can use JSONP.JSONP stands for JSON Padding. You can change the object to be a parameter to a dataHandler() function, and itll work.
+
+So basically, you take the object and wrap it in a dataHandler() function. Then in your js, write a function dataHandler(info) {} and pass in the object. Then add the <script src> tag to your html, calling the file from the server.
+
+CALLBACKS
+- When making an asynchronous request, its important not to let the client be blocked.
+
+request = prepare_the_request();
+send_request_asynchronously(request, function(request)) {
+  display(response);
+});
+
+ex.:
+assuming you dont care about IE6 (which if you do, then set XMLHttpRequest),
+
+xmlhttp.open("GET", "ajax_info.txt", true);
+xmlhttp.send();
+
+USING jQuery:
+You can get rid of all the request stuff above and use:
+$.getJSON('data.json', function(data) {
+  var output = '<ul>';
+  $.each(data, function(key, val) {
+    output += '<li>' + val.name + '</li>';
+  });
+  output += '</ul>';
+  $('#update').append(output);
+});
+
+Also takes care of JSONP.
+
+JQUERY PROMISES:
+- A promise is an object that helps deal with deferred results. You can use .done/.fail as a way of promising.
+
+ex.
+(function() {})
+getCustomers = function() {
+  getCustomerData()
+    .done(function (custs) {
+      var custsHtml = "";
+      for (var i = 0; i < custs.length; i++) {
+        custsHtml += "<li>" + custs[i].FirstName + " " + custs[i].LastName;
+      }
+      $("#CustomersContainer").html(custsHtml);
+    })
+    .fail(function() {
+      alert("unable to get customers");
+    });
+},
+
+getCustomersData = function() {
+  return $.getJSON(urlBase);
+},
+
+CRUCIAL =
+- SO you have many AJAX calls all throughout your application, how do you structure it better? You can create a dataservice.js layer.
+ex.
+var dataService = new function() {
+  var serviceBase = '/api/dataService/',
+  getCustomers = function() {
+    return $.getJSON(serviceBase + 'customers');
+  };
+
+  return {
+    getCustomers : getCustomers
+  };
+}();
+
+(then use dataSevice.getCustomers() in other code)
+
+// Revealing Module pattern: The () at the end self-invokes the function which creates a singleton (one object in memory) and the return creates a public API, coming from private functions
+
+If you have multiple AJAX calls with promises, use $.when():
+ex.
+$.when(ajaxCall1(), ajaxCall2(), ajaxCall3())
+  .done(function (c1Data, c2Data, c3Data) {
+    // process data
+  })
+  .fail(function(jqXHR, statusText, err) {
+    // handle error
+  });
+
+- if you get an array of promises, you can use .apply($, promises) (where promises are the array)
+- You can also set request headers in JQuery.
+ex.
+authenticate = function(authtoken) {
+  $.ajax({
+    url: '/api/authentication',
+    type: 'POST',
+    beforeSend: function(request) {
+      request.setRequestHeader("AuthToken", authtoken);
+    }
+  });
+}
+
+to get the header:
+.done(function(data, statusText, jqXHR) {
+  jqXHR.getResponseHeader("AuthToken")
+})
+
+            =========== CHAPTER 10: JSON ===========
+Benefits: More readable, XML is harder to parse, JSON is already mapped in JavaScript
+
+{
+  "name"     : "Sabba Petri",
+  "position" : "Web Developer",
+  "courses"  : [
+    "js stuff",
+    "css stuff"
+  ]
+}
+var info = JSON.parse(data);
+info.courses[1] // css stuff
+
+JavaScript Objects vs. JSON
+- all JSON keys are strings ("")
+- JSON keys can be any valid strings
+- JS object can be any data type
+- JSON needs to be fed as a string into a variable, then parsed into JS. Can be done using eval(), but is less secure. JSON.parse is more secure, but less supported by older browsers.
+- JSON.stringify does opposite of parse, which takes existing JS object and convert into string. same compatibility issues as parse with older browsers. jQuery is best to use.
+
+Javascript object:
+var info = { full_name : "Sabba Petri" };
+
+To access:
+  console.log(info.full_name)
+or
+  console.log(info["full_name"]);
+
+var info = {
+  "full_name" : "Sabba Petri",
+  "links"     : {
+    "blog"    : "http://blog",
+    "facebook": "http://fb.com"
+  }
+};
+
+> console.log(info.links.facebook)
+
+If you want to guarantee order, use arrays instead of objects in objects
+
+To delete array items from an object, use splice(). delete() does not update the object after deleting it.
+To add to an object, use the push() function.
+
+FOR LOOPS in objects:
+
+<h2></h2>
+<ul id="links"></ul>
+
+var info = {
+  "full_name" : "Sabba Petri",
+  "links"     : {
+    "blog"    : "http://blog",
+    "facebook": "http://fb.com",
+    "twitter" : "http://twitter.com"
+  }
+};
+
+var output = "";
+for (key in info.links) {
+  if (key.hasOwnProperty(key)) {
+    output += '<li>' + '<a href = "' + info.links[key] + '">' + key + '</a>' + '<li>';
+  }
+}
+
+var update = document.getElementyId('links');
+update.innerHTML = output;
+
+// This will return items in array in an unordered way
+// The following case has an array instead of an object
+
+<h2></h2>
+<ol id="links"></ol>
+
+var info = [
+  "full_name" : "Sabba Petri",
+  "links"     : {
+    "blog"    : "http://blog",
+    "facebook": "http://fb.com",
+    "twitter" : "http://twitter.com"
+  ]
+};
+
+var output = '';
+for (var i = 0; i <= info.links.length; i++) {
+  for (key in info.links[i]) {
+    if(info.links[i].hasOwnProperty(key)) {
+      output += '<li>' + '<a href = "' + info.links[i][key] + '">' + key + '</a>' + '</li>'
+    }
+  } // for each object
+} // for each array element
+
+var update = document.getElementById('links');
+update.innerHTML = output;
+
+// ------- loop through and replace all html tags
+var socialMedia = {
+  facebook: 'http://facebook.com',
+  twitter: 'http://twitter.com'
+};
+
+var social = function() {
+  var output = '<ul>';
+  var myList = document.querySelectorAll('.socialmediaicons');
+  var key;
+  for (key in socialMedia) {
+    output += '<li><a href="' + socialMedia[key] + "...</li>";
+  }
+  output += '</ul>';
+
+  for (var i = myList.length - 1; i >= 0; i--) {
+    myList[i].innerHTML = output;
+  };
+
+}(socialMedia);
+
+
+            =========== CHAPTER 11: EVENTS ===========
+
+- Binding event listeners.
+IE > (all browsers) -- use addEventListener()
+<script>
+  document.getElementyId('pink').addEventListener('click', function() {
+    alert('clicked on Pink')
+  }, false);
+</script>
+
+IE8 < -- use attachEvent()
+<script>
+  document.getElementyId('pink').attachEvent('onclick', function() {
+    alert('clicked on Pink')
+  });
+</script>
+
+jQuery is great for all browsers:
+<script>
+  $('#pink').on('click', function() {
+    alert('clicked on Pink')
+  });
+</script>
+
+- Event Propagation
+  - Event Propagation lets you have a single element capture all the events of its children elements. i.e. If you have an event listener on the parent <ul> element, the event will propagate to its child elements.
+  - Dark side to event propagation. Browsers disagree on the order.
+    - Capturing goes down the DOM (from <ul> down to <li>)
+    - Bubbling goes up the DOM (from <li> to <ul>)
+    - Matters when it comes to older browsers like IE (support only bubble)
+    - When in doubt, set addEventListener third parameter to false.
+  - stopPropagation() lets you not propagate up or down the DOM.
+  - Some events have default behavior (clicking on links, submitting forms, etc). To stop the default behavior, you can use preventDefault()
+
+- Events include 'click', 'mouseover', 'mouseout', 'mousemove' (change offsets for moving pic), 'load' (which takes care of when things are done like a spinner). If you mouseover, youll probably need to mouseout.
+- If you want to prevent a default function (like override right-click), use e.preventDefault()
+- When creating events, if they start to error and its exponential, you may need to clear event queue. Just give the eventHandler a name, and then later on in the code, remove the eventHandler (by its name).
+
+JQUERY EVENTS
+- Namespacing events.
+ie. 
+$('#something').on('click.glow', function() { });
+$('#something').on('hover.glow', function() { });
+
+$('#something').off('.glow', function() { }); // this will remove all glow events
+
+- Customized events.
+ie.
+$(document).ready(function() {
+  $("input").on("clear", function() { 
+    $(this).val("");
+  });
+
+  $("button").on("click", function(e) {
+    $("input").trigger("clear");
+  });
+}); // This creates a "clear" custom event that can be triggered from anywhere
+
+
+=========== CHAPTER 12: JQuery Tips/Tricks ===========
+var people = [
+  { fn: "John", ln: "Doe", bday: "07/14/2012", age: 36 },
+  { fn: "Jane", ln: "Doe", bday: "10/12/1983", age: 12 },
+  { fn: "Joe", ln: "Doe", bday: "11/19/2007", age: 83 }      
+]
+
+- $.map()
+// You pass in an array and jQuery will iterate through the array and allocate data
+ex.
+var people = $.map(people, function(person) {
+  return {
+    firstName: person.fn,
+    lastName: person.ln,
+    age: person.bday
+  }
+})
+
+// another example
+var output = $("input").map(function() {
+  return $(this).val();
+}).get().join(" "); //once the iteration is done, it'll give two strings. get() makes strings into an array and you can join on the array so it returns "something something"
+
+
+- $.grep()
+// You pass in array and jQuery will return only truthy values
+ex.
+var people = $.grep(people, function(people) {
+  return person.age > 18;
+})
+
+- $.type()
+// jQuery provides us this more accurate method to use instead of JS' typeof method
+
+- $.extend()
+// This is great for jQuery plugins, when you need to merge two different objects together
+
+ex. 
+jQuery.fn.valentines = function(options) {
+  var settings = $.extend(
+    {},
+    {color: 'red', fontSize: "16px" },
+    options
+  )
+}
+
+$("a").valentines({ color: "#A00000" });
+ 
+
+=========== CHAPTER 13: JS Patterns =========== 
+
+- Need to avoid function spaghetti code (for global variable reasons/function naming reasons)
+Closures:
+ex.
+function myClosure() {
+  var date = new Date();
+  var myNestedFunc = function() {
+    return date.getMilliseconds();
+  };
+  return {
+    foo: myNestedFunc
+  };
+}
+
+var my_closure = new myClosure();
+my_closure.foo() //returns milliseconds
+
+      -- Prototype Pattern --
+Pros:
+- Prototyping is native to JS
+- Modularization/encapsulation of code (reusable, vars are unique)
+- Variables/functions are taken out of global namespace
+- Functions loaded into memory once (HUGE)
+- Possible to "override" functions through prototyping
+
+Cons:
+- "this" can be tricky
+- Constructor separate from prototype definition
+
+ex.
+var Calculator = function(eq) {
+  this.eqCtl = document.getElementyId(eq);
+};
+
+Calculator.prototype = {
+  add: function(x, y) {
+    var val = x + y;
+    this.eqCtl.innerHTML = val;
+  }
+}
+
+// to call
+window.onLoad = function() {
+  var calc = new Calculator('eqCtl');
+  calc.add(2, 2);  
+}
+
+- This is excellent because while you may have 5000 instances of calculator, youve stored the 'add' function in memory, so its very efficient.
+- No state is tracked in the functions (through variables), its tracked in the instance.
+
+To namespace (so that Calculator isnt global), follow example. Namespace may be your company name:
+
+var myNS = myNS || {}; //this is to say use my NS unless NS was defined by someone else, then create an empty object so they can override it
+myNS.Calculator = function(eq) {
+  this.eqCtl = document.getElementyId(eq);
+};
+
+myNS.Calculator.prototype = {
+  add: function(x, y) {
+    var val = x + y;
+    this.eqCtl.innerHTML = val;
+  }
+}
+
+// to call
+window.onLoad = function() {
+  var calc = new myNS.Calculator('eqCtl');
+  calc.add(2, 2);  
+}
+
+
+      -- Module Pattern --
+Pros:
+- "Modularize" code into re-use objects
+- Variables/functions taken out of global namespace
+= Explore only public members while hiding private members (advantage over prototype method)
+
+Cons:
+- Functions may be duplicated across objects in memory when not using singleton
+- Not easy to extend, have to go into source code
+- Some complain about debugging
+
+ex.
+var Calculator = function(eq) {
+  var eqCtl = document.getElementyId(eq);
+
+  return {
+    add: function(x, y) {
+      var val = x + y;
+      eqCtl.innerHTML = val;
+    }
+  };
+};
+
+- Can also namespace this (similar to Prototyping way)
+
+      -- Revealing Module Pattern --
+Pros:
+- "Modularize" code into re-use objects
+- Variables/functions taken out of global namespace
+= Explore only public members while hiding private members (advantage over prototype method)
+- "Cleaner" way to expose public members
+
+Cons:
+- Functions may be duplicated across objects in memory when not using singleton
+- Not easy to extend, have to go into source code
+- Some complain about debugging
+
+ex.
+var calculator = function(eq) {
+  var eqCtl = document.getElementyId(eq),
+  var doAdd = function (x, y) {
+    var val = x + y;
+    eqCtl.innerHTML = val;
+  };
+
+  return {
+    add: doAdd
+  };
+}('eqCtl');
+
+// To call
+window.onLoad = function() {
+  calculator.add(2, 2);  
+}
+
+      -- Revealing Prototype Pattern --
+Pros:
+- Combines Prototype and Revealing Module patterns
+- "modularlize" code into re-useable objects
+- Variables/functions taken out of global namespace
+- Expose only public members
+- Functions loaded into memory once
+- Extensible
+
+Cons:
+- "this" keyword can be tricky
+- Constructor separate from prototype definition
+
+ ex.
+ var Calculator = function(eq) {
+    // public variables here
+    this.eqCtl = document.getElementyId(eq);
+ };
+
+ Calculator.prototype = function() {
+    // private methods/variables here
+    var add = function(x, y) {
+      this.eqCtl.innerHTML = x + y;
+    };
+    return {
+      // public methods here
+      add: add
+    };
+ }();
+
+//to call
+ window.onLoad = function() {
+  var calc = new Calculator('eqCtl');
+  calc.add(2, 2);  
+}
+
+TIP: When calling functions within the private methods area, make sure to pass the 'this' context because if you dont, the object will not be passed. You can use 'call' function, and just use this and the function name.
+ex.
+Instead of:
+// calling function
+... = function() {
+  ...
+  setVal('0', this);
+}
+
+// function
+setVal = function(val, thisObj) {
+  thisObj.currNumberCtl.innerHTML = val;
+}
+
+
+You do:
+... = function() {
+  ...
+  setVal.call(this, '0');
+};
+
+// function
+setVal = function(val) {
+  this.currNumberCtl.innerHtml = val;
+}
+
+=========== CHAPTER 14: Restful Services ===========
+
+Learning about RESTful services:
+Representations
+- Resources can be made in JSON or XML
+- Breaking down bigger resources into smaller child resources is faster, more efficient in transfering and creating them.
+- Place the URI (or unique Id) in the resource so that they are capable of being linked together
+
+Messages
+
+HTTP REQUEST -
+- Every HTTP request looks like this:
+  <VERB> <URI> <HTTP Version>
+      <REQUEST HEADER>
+      <REQUEST BODY>
+
+<VERB>: one of the HTTP methods like GET, PUT, POST, DELETE, OPTIONS, etc
+<URI>: the URI of the resource on which the operation is going to be performed
+<HTTP Version>: version of HTTP, generally "HTTP v1.1"
+<REQUEST HEADER>: Contains metadata as a collection of key-value pairs of headers and their values. Information about message, sender like client type, formats, format type, cache settings, etc.
+<REQUEST BODY>: Actual message content.
+
+Example POST request:
+POST http://MyService/Person
+Host: MyService
+Content-type: text/xml; charset=utf-8
+Content-Length: 123
+<?xml version="1.0" encoding="utf-8"?>
+<Person>
+  <ID>1</ID>
+  <Name>Sabba Petri</Name>
+</Person>
+
+Example GET request:
+GET http://www.w3.org/Protocols/rfc2616/rfc2616.html HTTP/1.1
+Host: www.w3.org
+Accept: text/html,application/xhtml+xml,application/xml; …
+User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 …
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: en-US,en;q=0.8,hi;q=0.6
+
+(No message body here)
+
+HTTP Response - 
+<HTTP version> <Response Code>
+    <Response Header>
+    <Response Body>
+
+<RESPONSE CODE>: Contains status of request
+<Response Header>: Contains metadata and settings about the response message
+<Response Body>: Contains the representation if the request was successful
+
+Example response from GET request:
+HTTP/1.1 200 OK
+Date: Sat, 23 Aug 2014 18:31:04 GMT
+Server: Apache/2
+Last-Modified: Wed, 01 Sep 2004 13:24:52 GMT
+Accept-Ranges: bytes
+Content-Length: 32859
+Cache-Control: max-age=21600, must-revalidate
+Expires: Sun, 24 Aug 2014 00:31:04 GMT
+Content-Type: text/html; charset=iso-8859-1
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head><title>Hypertext Transfer Protocol -- HTTP/1.1</title></head>
+<body>
+...
+
+Addressing Resources:
+- REST requires each resource to have at least one URI. The job of the URI is to identify a resource or a collection of resources. The actual operation is determined by the HTTP verb.
+- An example resource person can be addressed like this:
+  http://MyService/Persons/1
+  (//ServiceName/ResourceType/:id)
+- Use plural nouns for naming your resources
+- Avoid spaces and if must, use underscores or hyphens
+- Any case can be used
+- If you need to change the location for a resource, do not discard the old URI. If a request comes for an old URI, use status code 300 and redirect the client to the new location
+- Avoid verbs for your resources names (for example: http://MyService/FetchPerson/1)
+
+Query Parameter in URI:
+- http://MyService/Persons/1 can also be written as http://MyService/Persons?id=1
+
+This work fine under REST but has disadvantages, such as increased complexity in readability, as well as Google indexers will ignore URIs with query parameters. The purpose of Query Parameters is to provide parameters to an operation that needs data items, like:
+http://MyService/Persons/1?format=json&encoding=UTF8
+
+Uniform Interface:
+GET - Read a resource - Safe (most popular and used to fetch a resource)
+PUT - Insert a new resource or update if resource already exists - idempotentt
+POST - Insert a new resource. Also can be used to update an existing resource - N/A
+DELETE - Delete a resource - Idempotent
+OPTIONS - List the allowed operations on a resource - Safe
+HEAD - Return only response headers without resposne body - Safe
+
+(Safe means operation doesnt have effect on original value of resource. Idempotent is an operation that gives the same result no matter how many times you perform it.)
+
+Difference between PUT and POST:
+- PUT is idempotent while POST is not. You can call PUT multiple times and the results will be the same, but not the case with POST, where it may result in multiple resources getting created on the server.
+- Another difference is that with PUT, you must always complete the URI of the resource.
+
+- PUT http://MyService/Persons/ ------ Won't work. PUT requires a complete URI
+- PUT http://MyService/Persons/1 ----- Insert a new person with PersonID=1 if it does not already exist, or else update the existing resource
+- POST http://MyService/Persons/ ----- Insert a new person every time this request is made and generate a new PersonID.
+- POST http://MyService/Persons/1 ----- Update the existing person where PersonID=1
+
+Statelessness:
+A restful service is stateless and must treat each request independently.
+Resources should be cacheable when possible
+
+Send using AJAX:
+function createRequest() {
+  var result = null;
+  if (window.XMLHttpRequest) {
+    // FireFox, Safari, etc.
+    result = new XMLHttpRequest();
+    if (typeof xmlhttp.overrideMimeType != 'undefined') {
+      result.overrideMimeType('text/xml'); // Or anything else
+    }
+  }
+  else if (window.ActiveXObject) {
+    // MSIE
+    result = new ActiveXObject("Microsoft.XMLHTTP");
+  } 
+  else {
+    // No known mechanism -- consider aborting the application
+  }
+  return result;
+}
+
+var req = createRequest(); // defined above
+// Create the callback:
+req.onreadystatechange = function() {
+  if (req.readyState != 4) return; // Not there yet
+  if (req.status != 200) {
+    // Handle request failure here...
+    return;
+  }
+  // Request successful, read the response
+  var resp = req.responseText;
+  // ... and use it as needed by your app.
+}
+
+req.open("GET", url, true);
+req.send();
+
+
+=========== CHAPTER 15: HTML5 ===========
+Web Storage:
+Local: Like a cookie. Can write info a users info and have it available
+Session: Same thing as local, but is only available during the session.
+
+- Depending on the browser, capcity is from 2 - 10MB often 5.
+- Cookies are the thing to use for persisting data. Smaller capacity than web storage. Also with web storage, data is not sent across the wire, whereas cookies does.
+- Web Storage is supported by most browsers.
+- Storage API has: storage.clear, .getItem, .key, .length, etc.
+- Store everything as strings and if not, you will need to parseInt or parseFloat to get the data into the expected JS datatype.
+- Calling setItem() with a named key that already exists will silently overwrite the previous value. Calling getItem() with a non-existent key will return null rather than throw an exception.
+- You can use square brackets in JS instead of getItem/setItem.
+i.e.
+var foo = localStorage.getItem("bar");
+// ...
+localStorage.setItem("bar", foo);
+
+…could be rewritten to use square bracket syntax instead:
+
+var foo = localStorage["bar"];
+// ...
+localStorage["bar"] = foo;
+
+- Then there is removeItem() and clear() (which will clear all stored key/value pairs)
+- To track changes, you can fire a storage event whenever something is called AND SOMETHING HAPPENS. If you call something and nothing happens, the event wont be fired.
+
+example of LocalStorage object:
+function saveGameState() {
+    if (!supportsLocalStorage()) { return false; }
+    localStorage["halma.game.in.progress"] = gGameInProgress;
+    for (var i = 0; i < kNumPieces; i++) {
+      localStorage["halma.piece." + i + ".row"] = gPieces[i].row;
+      localStorage["halma.piece." + i + ".column"] = gPieces[i].column;
+    }
+    localStorage["halma.selectedpiece"] = gSelectedPieceIndex;
+    localStorage["halma.selectedpiecehasmoved"] = gSelectedPieceHasMoved;
+    localStorage["halma.movecount"] = gMoveCount;
+    return true;
+}
+------
+
+function resumeGame() {
+    if (!supportsLocalStorage()) { return false; }
+      gGameInProgress = (localStorage["halma.game.in.progress"] == "true");
+    if (!gGameInProgress) { return false; }
+      gPieces = new Array(kNumPieces);
+    for (var i = 0; i < kNumPieces; i++) {
+      var row = parseInt(localStorage["halma.piece." + i + ".row"]);
+      var column = parseInt(localStorage["halma.piece." + i + ".column"]);
+      gPieces[i] = new Cell(row, column);
+    }
+    gNumPieces = kNumPieces;
+    gSelectedPieceIndex = parseInt(localStorage["halma.selectedpiece"]);
+    gSelectedPieceHasMoved = localStorage["halma.selectedpiecehasmoved"] == "true";
+    gMoveCount = parseInt(localStorage["halma.movecount"]);
+    drawBoard();
+    return true;
+}
+
+- Notice that localStorage is setting everything normally, but when retrieving the values (or checking them), they are either checking strings (=="true") or parseInting them.
+
+
+
